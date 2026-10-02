@@ -1,29 +1,40 @@
-from PySide6.QtWidgets import QMainWindow, QLabel
-from PySide6.QtGui import QAction, QKeySequence
+from pathlib import Path
 
+from PySide6.QtCore import QFile
+from PySide6.QtUiTools import QUiLoader
+from PySide6.QtWidgets import QFileDialog
 
-class MainWindow(QMainWindow):
+class MainWindow:
     def __init__(self):
-        super().__init__()
+        ui_path = Path(__file__).with_name("main_window.ui")
 
-        self.setWindowTitle("EllieEtcher")
-        self.resize(600, 400)
+        ui_file = QFile(str(ui_path))
+        ui_file.open(QFile.OpenModeFlag.ReadOnly)
 
-        self.setCentralWidget(QLabel("Hello, Ellie!"))
+        loader = QUiLoader()
+        self.window = loader.load(ui_file)
 
-        file_menu = self.menuBar().addMenu("&File")
+        ui_file.close()
 
-        open_action = QAction("&Open...", self)
-        open_action.setShortcut(QKeySequence.StandardKey.Open)
-        open_action.triggered.connect(self.open_file)
+        if self.window is None:
+            raise RuntimeError(loader.errorString())
 
-        exit_action = QAction("E&xit", self)
-        exit_action.setShortcut(QKeySequence.StandardKey.Quit)
-        exit_action.triggered.connect(self.close)
+        # put this down here after we have verified that self.window is valid
+        self.window.actionLoad.triggered.connect(self.load_action)
 
-        file_menu.addAction(open_action)
-        file_menu.addSeparator()
-        file_menu.addAction(exit_action)
+    def show(self):
+        self.window.show()
 
-    def open_file(self):
-        print("Open clicked")
+    def load_action(self):
+        filename, _ = QFileDialog.getOpenFileName(
+            self.window,
+            "Open File",
+            "",
+            "Supported Files (*.svg *.gcode *.nc *.tap);;"
+            "SVG Files (*.svg);;"
+            "G-code Files (*.gcode *.nc *.tap);;"
+            "All Files (*)",
+        )
+
+        if filename:
+            print(f"You selected {filename}")

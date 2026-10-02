@@ -1,0 +1,9 @@
+[project]
+name = "EllieEtcher"
+
+[tool.pyside6-project]
+files = [
+    "src/ellie_etcher.py",
+    "src/app/ui/main_window.py",
+    "src/app/ui/main_window.ui"
+]
